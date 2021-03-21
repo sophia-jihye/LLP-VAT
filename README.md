@@ -22,7 +22,7 @@ python -m llp_vat.preprocessing --domain_index 10 --alg uniform --bag_size 64
 Required arguments:
 | Parameter | Description |
 |:----------|:------------|
-| --domain_index | `1`, `2`, `3`, `4`, `5`, `6`, `7`, `8`, `9`, or `10` |
+| --domain_index | the domain index of Gas Sensor Array Drift dataset, `1`, `2`, `3`, `4`, `5`, `6`, `7`, `8`, `9`, or `10` |
 | --alg | the bag creation algorithm, `uniform` or `kmeans` |
 
 Optional arguments:
