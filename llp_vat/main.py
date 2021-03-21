@@ -182,11 +182,10 @@ def inference(model, loader):
                      leave=False,
                      ncols=150,
                      disable=args.disable):
-        x = x.cuda()
 
         with torch.no_grad():
-            logits = model(x)
-            records.append((x.squeeze(), logits.argmax().item(), y.argmax().item()))            
+            logits = model(x.cuda())
+            records.append((np.squeeze(x), logits.argmax().item(), y.argmax().item()))            
     return records
 
 def run_experiment(args, experiment):
