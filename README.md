@@ -1,8 +1,7 @@
 # LLP-VAT for Domain Adaptation on Gas Sensor Array Drift Dataset
 
-Pytorch implementation of LLP-VAT
-
-* Kuen-Han Tsai and Hsuan-Tien Lin. Learning from label proportions with consistency regularization. *In Proceedings of the Asian Conference on Machine Learning (ACML)*, November 2020 [ [pdf](https://www.csie.ntu.edu.tw/~htlin/paper/doc/acml20llpvat.pdf) ]
+* LLP-VAT
+    - Kuen-Han Tsai and Hsuan-Tien Lin. Learning from label proportions with consistency regularization. *In Proceedings of the Asian Conference on Machine Learning (ACML)*, November 2020 [ [pdf](https://www.csie.ntu.edu.tw/~htlin/paper/doc/acml20llpvat.pdf) ]
 
 ## Environment
 
@@ -63,14 +62,3 @@ Optional arguments:
 | --seed | pass an int for reproducible results | 0 |
 | --consistency_type | `vat`, `pi` or `none` | vat |
 | --consistency | consistecny loss weight | 0.05 |
-
-
-## Citation
-```
-@InProceedings{pmlr-v129-tsai20a, 
-    title = {Learning from Label Proportions with Consistency Regularization}, 
-    author = {Tsai, Kuen-Han and Lin, Hsuan-Tien}, 
-    booktitle = {Proceedings of The 12th Asian Conference on Machine Learning}, 
-    year = {2020} 
-}
-```
