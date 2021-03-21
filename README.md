@@ -42,20 +42,19 @@ Arugments for the bag creation algorithm:
 
 ### Experiment
 ```
-python -m llp_vat.main --dataset_name cifar10 --alg uniform -b 64
+python -m llp_vat.main --domain_index 10 --alg uniform -b 64
 ```
 
 Required arguments:
 | Parameter | Description |
 |:----------|-------------|
-| --dataset_name | `svhn`, `cifar10` or `cifar100` |
+| --domain_index | the domain index of Gas Sensor Array Drift dataset, `1`, `2`, `3`, `4`, `5`, `6`, `7`, `8`, `9`, or `10` |
 | --alg | the bag creation algorithm, `uniform` or `kmeans` |
 
 Optional arguments:
 | Parameter | Description | Default |
 |:----------|:------------|:--------|
 | --obj_dir | path to the proccessed object directory| ./obj |
-| --dataset_dir | path to the raw data directory | ./obj/dataset |
 | --result_dir | path to the result directory | ./results |
 | --num_epochs | number of training epochs | 400 |
 | --lr | value of learning rate | 0.0003 |

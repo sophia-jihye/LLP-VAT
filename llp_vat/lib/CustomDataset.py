@@ -22,6 +22,7 @@ class GSADDataset(Dataset):
         # Preprocess 
         df['label'] = df['label'].apply(lambda x: x-1)
         feature_cols = [col for col in df.columns if col not in ('label', 'batch')]
+        self.input_dim = len(feature_cols)
 
         features = df[feature_cols].values
         # Rescale
@@ -32,7 +33,7 @@ class GSADDataset(Dataset):
             features = scaler.transform(features)
         
         self.scaler = scaler
-        self.features = torch.tensor(features, dtype=torch.long)
+        self.features = torch.tensor(features, dtype=torch.float)
         self.labels = torch.tensor(df.label.values, dtype=torch.long)
         self.n_data = len(df.label.values)
 

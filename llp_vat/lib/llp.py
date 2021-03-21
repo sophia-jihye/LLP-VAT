@@ -127,9 +127,9 @@ def kmeans_creation(dataset, n_clusters, reduction, seed):
     return bags
 
 
-def load_llp_dataset(domain_index, obj_dir, dataset_name, alg, **kwargs):
+def load_llp_dataset(domain_index, obj_dir, alg, **kwargs):
     train = GSADDataset(domain_index=domain_index, scaler=None)
-    dataset = {'train': train, 'test': train, 'num_classes': train.num_classes}
+    dataset = {'train': train, 'test': train, 'num_classes': train.num_classes, 'input_dim': train.input_dim}
 
     if alg == "uniform":
         sampling = "SWR" if kwargs["replacement"] else "SWOR"
@@ -142,7 +142,7 @@ def load_llp_dataset(domain_index, obj_dir, dataset_name, alg, **kwargs):
                                               kwargs["bag_size"])
     else:
         raise NameError("algorithm {} is not supported".format(alg))
-    path = os.path.join(obj_dir, dataset_name, filename)
+    path = os.path.join(obj_dir, 'GSAD_{}'.format(domain_index), filename)
 
     bags = np.load(path, allow_pickle=True)
     print("Load bags from {}".format(path))

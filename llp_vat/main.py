@@ -15,7 +15,7 @@ from llp_vat.lib.llp import (BagMiniBatch, BagSampler, Iteration,
                              load_llp_dataset)
 from llp_vat.lib.losses import (PiModelLoss, ProportionLoss, VATLoss,
                                 compute_hard_l1, compute_soft_kl)
-from llp_vat.lib.networks import wide_resnet28_2
+from llp_vat.lib.models import MLPModel
 from llp_vat.lib.ramps import sigmoid_rampup
 from llp_vat.lib.run_experiment import (RunExperiment, save_checkpoint,
                                         write_meters)
@@ -126,9 +126,8 @@ def train_llp(args, epoch, iteration, model, optimizer, loader,
     return meters
 
 
-def eval(args, epoch, iteration, model, loader, criterion, logger, prefix=""):
+def eval(args, num_classes, epoch, iteration, model, loader, criterion, logger, prefix=""):
     meters = AverageMeterSet()
-    num_classes = 100 if args.dataset_name == 'cifar100' else 10
 
     model.eval()
     for x, y in tqdm(loader,
@@ -173,21 +172,6 @@ def train_valid_split(dataset, valid_ratio, seed):
     return train, valid
 
 
-def create_model(model_name, num_classes, dataset_name):
-    if model_name == "wrn28-2":
-        if dataset_name.lower().startswith("cifar"):
-            dropout_rate = 0.3
-        elif dataset_name.lower().startswith("svhn"):
-            dropout_rate = 0.4
-        else:
-            raise NameError("Unknown dataset name")
-        print("Dropout: {}".format(dropout_rate))
-        return wide_resnet28_2(dropout_rate=dropout_rate,
-                               num_classes=num_classes)
-    else:
-        raise NameError("Unknown model name")
-
-
 def run_experiment(args, experiment):
     experiment.save_config(vars(args))
 
@@ -204,14 +188,12 @@ def run_experiment(args, experiment):
     if args.alg == "uniform":
         dataset, bags = load_llp_dataset(args.domain_index,
                                          args.obj_dir,
-                                         args.dataset_name,
                                          args.alg,
                                          replacement=args.replacement,
                                          bag_size=args.bag_size)
     elif args.alg == "kmeans":
         dataset, bags = load_llp_dataset(args.domain_index,
                                          args.obj_dir,
-                                         args.dataset_name,
                                          args.alg,
                                          n_clusters=args.n_clusters,
                                          reduction=args.reduction)
@@ -238,8 +220,7 @@ def run_experiment(args, experiment):
                              num_workers=2)
 
     # declare model
-    model = create_model(args.model_name, dataset["num_classes"],
-                         args.dataset_name)
+    model = MLPModel(dataset["input_dim"], dataset["num_classes"])
     model = model.cuda()
 
     # declare optimizer
@@ -288,11 +269,11 @@ def run_experiment(args, experiment):
         write_meters(epoch, "train", tb_writer, train_meters)
 
         if valid_loader:
-            valid_meters = eval(args, epoch, iteration, model, valid_loader,
+            valid_meters = eval(args, dataset["num_classes"], epoch, iteration, model, valid_loader,
                                 criterion, valid_log)
             write_meters(epoch, "valid", tb_writer, valid_meters)
 
-        test_meters = eval(args, epoch, iteration, model, test_loader,
+        test_meters = eval(args, dataset["num_classes"], epoch, iteration, model, test_loader,
                            criterion, test_log)
         write_meters(epoch, "test", tb_writer, test_meters)
 
@@ -323,9 +304,7 @@ def get_args():
     # basic arguments
     parser.add_argument("--obj_dir", default="./obj")
     parser.add_argument("-i", "--domain_index", type=int, required=True)
-    parser.add_argument("-d", "--dataset_name", type=str)
     parser.add_argument("--result_dir", default="./results")
-    parser.add_argument("-m", "--model_name", type=str, default="wrn28-2")
     parser.add_argument("-e", "--num_epochs", type=int, default=400)
     parser.add_argument("--lr", type=float, default=3e-4)
     parser.add_argument("--optimizer", type=str, default="adam")
