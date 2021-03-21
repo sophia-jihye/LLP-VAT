@@ -37,7 +37,7 @@ class GSADDataset(Dataset):
         self.n_data = len(df.label.values)
 
     def __getitem__(self, idx):
-        feature, label = self.features[idx], torch.nn.functional.one_hot(self.labels[idx], num_classes = self.num_classes)
+        feature, label = self.features[idx], torch.nn.functional.one_hot(self.labels[idx], num_classes = self.num_classes).float()
         return feature, label
 
     def __len__(self):
