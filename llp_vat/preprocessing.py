@@ -15,9 +15,8 @@ def main(args):
                       seed=args.seed)
     else:
         raise NameError("The bag creation algorithm is not supported")
-    create_llp_dataset(args.dataset_dir,
+    create_llp_dataset(args.domain_index,
                        args.obj_dir,
-                       args.dataset_name,
                        args.alg,
                        **kwargs)
 
@@ -25,10 +24,7 @@ def main(args):
 def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--obj_dir", default="./obj")
-    parser.add_argument("--dataset_dir", default="./obj/dataset")
-    parser.add_argument("-d", "--dataset_name",
-                        choices=["svhn", "cifar10", "cifar100"],
-                        required=True)
+    parser.add_argument("-i", "--domain_index", type=int, required=True)
     parser.add_argument("--alg", choices=["uniform", "kmeans"], required=True)
     parser.add_argument("-b", "--bag_size", type=int)
     parser.add_argument("--replacement", action="store_true")

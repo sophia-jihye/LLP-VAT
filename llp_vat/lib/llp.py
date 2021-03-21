@@ -5,11 +5,10 @@ from itertools import groupby
 
 import numpy as np
 import torch
+from llp_vat.lib.CustomDataset import GSADDataset
 from sklearn.cluster import MiniBatchKMeans
 from sklearn.decomposition import PCA
-from torch.utils.data import Sampler, BatchSampler, RandomSampler
-
-from llp_vat.lib.datasets import load_dataset
+from torch.utils.data import BatchSampler, RandomSampler, Sampler
 
 
 class Iteration:
@@ -128,8 +127,9 @@ def kmeans_creation(dataset, n_clusters, reduction, seed):
     return bags
 
 
-def load_llp_dataset(dataset_dir, obj_dir, dataset_name, alg, **kwargs):
-    dataset = load_dataset(dataset_dir, dataset_name)
+def load_llp_dataset(domain_index, obj_dir, dataset_name, alg, **kwargs):
+    train = GSADDataset(domain_index=domain_index, scaler=None)
+    dataset = {'train': train, 'test': train, 'num_classes': train.num_classes}
 
     if alg == "uniform":
         sampling = "SWR" if kwargs["replacement"] else "SWOR"
@@ -149,8 +149,9 @@ def load_llp_dataset(dataset_dir, obj_dir, dataset_name, alg, **kwargs):
     return dataset, bags
 
 
-def create_llp_dataset(dataset_dir, obj_dir, dataset_name, alg, **kwargs):
-    dataset = load_dataset(dataset_dir, dataset_name)
+def create_llp_dataset(domain_index, obj_dir, alg, **kwargs):
+    train = GSADDataset(domain_index=domain_index, scaler=None)
+    dataset = {'train': train, 'test': train, 'num_classes': train.num_classes}
     if alg == "uniform":
         sampling = "SWR" if kwargs["replacement"] else "SWOR"
         filename = "uniform-{}-{}.npy".format(sampling, kwargs["bag_size"])
@@ -161,7 +162,7 @@ def create_llp_dataset(dataset_dir, obj_dir, dataset_name, alg, **kwargs):
         bags = kmeans_creation(dataset["train"], **kwargs)
     else:
         raise NameError("algorithm {} is not supported".format(alg))
-    path = os.path.join(obj_dir, dataset_name, filename)
+    path = os.path.join(obj_dir, 'GSAD_{}'.format(domain_index), filename)
     # dump bags
     dirname = os.path.dirname(os.path.abspath(path))
     pathlib.Path(dirname).mkdir(parents=True, exist_ok=True)

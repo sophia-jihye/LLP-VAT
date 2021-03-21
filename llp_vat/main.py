@@ -1,7 +1,6 @@
 import argparse
 import os
 import uuid
-from tqdm.auto import tqdm
 
 import arrow
 import numpy as np
@@ -10,15 +9,16 @@ import torch.nn.functional as F
 import torch.optim as optim
 from torch.utils.data import DataLoader
 from torch.utils.data.dataset import random_split
+from tqdm.auto import tqdm
 
-from llp_vat.lib.llp import (BagMiniBatch, load_llp_dataset, BagSampler,
-                             Iteration)
-from llp_vat.lib.losses import (ProportionLoss, PiModelLoss, VATLoss,
+from llp_vat.lib.llp import (BagMiniBatch, BagSampler, Iteration,
+                             load_llp_dataset)
+from llp_vat.lib.losses import (PiModelLoss, ProportionLoss, VATLoss,
                                 compute_hard_l1, compute_soft_kl)
 from llp_vat.lib.networks import wide_resnet28_2
-from llp_vat.lib.run_experiment import (write_meters, RunExperiment,
-                                        save_checkpoint)
 from llp_vat.lib.ramps import sigmoid_rampup
+from llp_vat.lib.run_experiment import (RunExperiment, save_checkpoint,
+                                        write_meters)
 from llp_vat.lib.utils import AverageMeterSet, accuracy, parameters_string
 
 
@@ -202,14 +202,14 @@ def run_experiment(args, experiment):
 
     # load LLP dataset
     if args.alg == "uniform":
-        dataset, bags = load_llp_dataset(args.dataset_dir,
+        dataset, bags = load_llp_dataset(args.domain_index,
                                          args.obj_dir,
                                          args.dataset_name,
                                          args.alg,
                                          replacement=args.replacement,
                                          bag_size=args.bag_size)
     elif args.alg == "kmeans":
-        dataset, bags = load_llp_dataset(args.dataset_dir,
+        dataset, bags = load_llp_dataset(args.domain_index,
                                          args.obj_dir,
                                          args.dataset_name,
                                          args.alg,
@@ -322,9 +322,9 @@ def get_args():
 
     # basic arguments
     parser.add_argument("--obj_dir", default="./obj")
-    parser.add_argument("--dataset_dir", default="./obj/dataset")
-    parser.add_argument("--result_dir", default="./results")
+    parser.add_argument("-i", "--domain_index", type=int, required=True)
     parser.add_argument("-d", "--dataset_name", type=str)
+    parser.add_argument("--result_dir", default="./results")
     parser.add_argument("-m", "--model_name", type=str, default="wrn28-2")
     parser.add_argument("-e", "--num_epochs", type=int, default=400)
     parser.add_argument("--lr", type=float, default=3e-4)

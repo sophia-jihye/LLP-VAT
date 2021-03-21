@@ -1,4 +1,4 @@
-# LLP-VAT
+# LLP-VAT for Domain Adaptation on Gas Sensor Array Drift Dataset
 
 Pytorch implementation of LLP-VAT
 
@@ -7,33 +7,28 @@ Pytorch implementation of LLP-VAT
 ## Environment
 
 * Python version: 3.6.2
-* GPU: GeForce GTX 1080
+* GPU: GeForce GTX 970
 * Prerequisite:
     ```
     pip install -r requirements.txt
     ```
 
 
-## Usage
-
-Make sure to generate the LLP data before running the experiment of LLP-VAT.
-
 ### Preprocessing
 ```
-python -m llp_vat.preprocessing --dataset_name cifar10 --alg uniform --bag_size 64
+python -m llp_vat.preprocessing --domain_index 10 --alg uniform --bag_size 64
 ```
 
 Required arguments:
 | Parameter | Description |
 |:----------|:------------|
-| --dataset_name | `svhn`, `cifar10` or `cifar100` |
+| --domain_index | `1`, `2`, `3`, `4`, `5`, `6`, `7`, `8`, `9`, or `10` |
 | --alg | the bag creation algorithm, `uniform` or `kmeans` |
 
 Optional arguments:
 | Parameter | Description |
 |:----------|:------------|
 | --obj_dir | path to the proccessed object directory|
-| --dataset_dir | path to the raw data directory |
 
 Arugments for the bag creation algorithm:
 | Algorithm | Parameter | Description |
