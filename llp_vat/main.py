@@ -1,5 +1,6 @@
 import argparse
 import os
+import pickle
 import uuid
 
 import arrow
@@ -20,6 +21,14 @@ from llp_vat.lib.ramps import sigmoid_rampup
 from llp_vat.lib.run_experiment import (RunExperiment, save_checkpoint,
                                         write_meters)
 from llp_vat.lib.utils import AverageMeterSet, accuracy, parameters_string
+
+
+def train_valid_split(dataset, valid_ratio, seed):
+    torch.manual_seed(seed)
+    valid_size = int(valid_ratio * len(dataset))
+    train_size = len(dataset) - valid_size
+    train, valid = random_split(dataset, [train_size, valid_size])
+    return train, valid
 
 
 def get_rampup_weight(weight, iteration, rampup):
@@ -164,13 +173,21 @@ def eval(args, num_classes, epoch, iteration, model, loader, criterion, logger, 
     return meters
 
 
-def train_valid_split(dataset, valid_ratio, seed):
-    torch.manual_seed(seed)
-    valid_size = int(valid_ratio * len(dataset))
-    train_size = len(dataset) - valid_size
-    train, valid = random_split(dataset, [train_size, valid_size])
-    return train, valid
+def inference(model, loader):
+    records = []
 
+    model.eval()
+    for x, y in tqdm(loader,
+                     "[Inference]",
+                     leave=False,
+                     ncols=150,
+                     disable=args.disable):
+        x = x.cuda()
+
+        with torch.no_grad():
+            logits = model(x)
+            records.append((x.squeeze(), logits.argmax().item(), y.argmax().item()))            
+    return records
 
 def run_experiment(args, experiment):
     experiment.save_config(vars(args))
@@ -279,13 +296,24 @@ def run_experiment(args, experiment):
 
         scheduler.step()
 
-        # save checkpoint
-        if (epoch + 1) % 50 == 0:
-            logger.info("Save checkpoint#{}".format(epoch))
-            filename = os.path.join(experiment.result_dir, "model.tar")
-            save_checkpoint(filename, model, epoch, optimizer)
+    # save checkpoint
+    logger.info("Save checkpoint#{}".format(epoch))
+    filename = os.path.join(experiment.result_dir, "model.tar")
+    save_checkpoint(filename, model, epoch, optimizer)
+
     tb_writer.close()
 
+    # Inference
+    inference_loader = DataLoader(dataset["test"],
+                             batch_size=1,
+                             pin_memory=True,
+                             num_workers=2)
+    records = inference(model, inference_loader)
+    logger.info("Save weak labels for GSAD domain {}".format(args.domain_index))
+    filename = os.path.join(experiment.result_dir, "weak_labels_GSAD{}.pkl".format(args.domain_index))
+    with open(filename, 'wb') as f:
+        pickle.dump(records, f)
+    print('Created', filename)
 
 def main(args):
     uid = "{time}_{uuid}".format(
@@ -303,7 +331,7 @@ def get_args():
 
     # basic arguments
     parser.add_argument("--obj_dir", default="./obj")
-    parser.add_argument("-i", "--domain_index", type=int, required=True)
+    parser.add_argument("-i", "--domain_index", type=int, default=10)
     parser.add_argument("--result_dir", default="./results")
     parser.add_argument("-e", "--num_epochs", type=int, default=100)
     parser.add_argument("--lr", type=float, default=3e-4)
@@ -317,8 +345,8 @@ def get_args():
                         help="disable the progress bar")
 
     # bag creation algorithms
-    parser.add_argument("--alg", choices=["uniform", "kmeans"])
-    parser.add_argument("-b", "--bag_size", type=int)
+    parser.add_argument("--alg", choices=["uniform", "kmeans"], default='uniform')
+    parser.add_argument("-b", "--bag_size", type=int, default=64)
     parser.add_argument("--replacement", action="store_true")
     parser.add_argument("-k", "--n_clusters", type=int)
     parser.add_argument("--reduction", type=int, default=600)
