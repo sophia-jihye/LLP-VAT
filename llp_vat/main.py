@@ -305,7 +305,7 @@ def get_args():
     parser.add_argument("--obj_dir", default="./obj")
     parser.add_argument("-i", "--domain_index", type=int, required=True)
     parser.add_argument("--result_dir", default="./results")
-    parser.add_argument("-e", "--num_epochs", type=int, default=400)
+    parser.add_argument("-e", "--num_epochs", type=int, default=100)
     parser.add_argument("--lr", type=float, default=3e-4)
     parser.add_argument("--optimizer", type=str, default="adam")
     parser.add_argument("--weight_decay", type=float, default=0.)
