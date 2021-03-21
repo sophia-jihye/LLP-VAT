@@ -330,7 +330,7 @@ def get_args():
 
     # basic arguments
     parser.add_argument("--obj_dir", default="./obj")
-    parser.add_argument("-i", "--domain_index", type=int, default=10)
+    parser.add_argument("-i", "--domain_index", type=int, required=True, default=10)
     parser.add_argument("--result_dir", default="./results")
     parser.add_argument("-e", "--num_epochs", type=int, default=100)
     parser.add_argument("--lr", type=float, default=3e-4)
@@ -344,7 +344,7 @@ def get_args():
                         help="disable the progress bar")
 
     # bag creation algorithms
-    parser.add_argument("--alg", choices=["uniform", "kmeans"], default='uniform')
+    parser.add_argument("--alg", choices=["uniform", "kmeans"], required=True, default='uniform')
     parser.add_argument("-b", "--bag_size", type=int, default=64)
     parser.add_argument("--replacement", action="store_true")
     parser.add_argument("-k", "--n_clusters", type=int)
